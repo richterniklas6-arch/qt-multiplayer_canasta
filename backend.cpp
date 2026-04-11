@@ -6,16 +6,16 @@
 // Wird aufgerufen, wenn das Backend-Objekt erstellt wird
 BACKEND::BACKEND(QObject *parent) : QObject(parent) {}
 
-
-// -----------------------------
-// HOST (SERVER) STARTEN
-// -----------------------------
+// ---------------------------------------------------------------------------------------------------------------------------------------------------
+//                                                                Server einrichten
+// ---------------------------------------------------------------------------------------------------------------------------------------------------
+// HOST (SERVER) starten
 void BACKEND::host_game()
 {
     // Erstelle einen TCP-Server (wartet auf eingehende Verbindungen)
     server = new QTcpServer(this);
 
-    // Verbinde das Signal "neue Verbindung" mit unserer Funktion onNewConnection
+    // Verbinde das Signal "neue Verbindung" mit unserer Funktion on_new_connection
     connect(server, &QTcpServer::newConnection,
             this, &BACKEND::on_new_connection);
 
@@ -26,19 +26,14 @@ void BACKEND::host_game()
     }
 }
 
-
-// -----------------------------
 // Setzt ob man HOST oder CLIENT ist
-// -----------------------------
 void BACKEND::set_server_mode(bool server)
 {
-    m_is_server = server;
-    emit server_mode_changed(server);
+    m_is_server = server;               // setze die member (m_is_sever) auf false (ist nicht Server)/true (ist Server)
+    emit server_mode_changed(server);   // lösen dieses Signal aus, nehme den Bool mit
 }
 
-// -----------------------------
 // CLIENT VERBINDET SICH ZUM HOST
-// -----------------------------
 void BACKEND::join_game(QString ip)
 {
     socket = new QTcpSocket(this);
@@ -55,13 +50,11 @@ void BACKEND::join_game(QString ip)
     emit status_changed("Verbinde zu " + ip);
 }
 
-
-// -----------------------------
-// WIRD AUFGERUFEN, WENN EIN CLIENT CONNECTET
-// (nur beim Host)
-// -----------------------------
+// WIRD AUFGERUFEN, WENN EIN CLIENT CONNECTET (nur beim Host)
+// hier kann alles rein, was passieren soll wenn ein neuer Client sich mit dem Host verbindet
 void BACKEND::on_new_connection()
 {
+
     socket = server->nextPendingConnection();
 
     connect(socket, &QTcpSocket::readyRead,
@@ -70,13 +63,11 @@ void BACKEND::on_new_connection()
     emit status_changed("Client verbunden!");
 }
 
-
-// -----------------------------
-// WIRD AUFGERUFEN, WENN DATEN EMPFANGEN WERDEN
-// (Host UND Client)
-// -----------------------------
+// WIRD AUFGERUFEN, WENN DATEN EMPFANGEN WERDEN (Host UND Client)
+// hier kann alles rein, wenn Daten geschickt werden, wie Namens Eingabe, Spielzüge,...
 void BACKEND::on_ready_read()
 {
+
     QString msg = QString::fromUtf8(socket->readAll());
 
     qDebug() << "RAW:" << msg;
@@ -104,31 +95,24 @@ void BACKEND::on_ready_read()
 }
 
 
-// -----------------------------
-// NACHRICHT SENDEN
-// -----------------------------
-void BACKEND::send_message(QString msg)
+// ---------------------------------------------------------------------------------------------------------------------------------------------------
+//                                                             Allgemeine Funktionen
+// ---------------------------------------------------------------------------------------------------------------------------------------------------
+// Nachrichten zwischen PC versenden
+void BACKEND::send_message(QString msg)//bekommt eine QString rein
 {
-    if (socket && socket->isOpen()) {
-        socket->write(msg.toUtf8());
+    if (socket && socket->isOpen()) {   // nur wenn Verbindung existiert und verbunden ist
+        socket->write(msg.toUtf8());    // sende die msg an den anderen PC
     }
 }
 
-//
-// setzt den Namen von Spieler 2 der geschickt wird
-//
-void BACKEND::set_pending_name(QString name)
+// ---------------------------------------------------------------------------------------------------------------------------------------------------
+//                                                             Startseite einrichten
+// ---------------------------------------------------------------------------------------------------------------------------------------------------
+// setzt Namen von Spieler 2
+void BACKEND::set_pending_name(QString name_player2) // geschickter Name vom anderen PC rein
 {
-    pending_name = name;
-}
-
-// -----------------------------
-// Setzt die Namen der Spieler und die Mindestpunktzahl
-// -----------------------------
-void BACKEND::set_player_names(QString name1, QString name2)
-{
-    player1.min_value = 50;
-    player2.min_value = 50;
+    pending_name = name_player2;    // setze Variable auf den Namen der geschickt wird
 }
 
 // -----------------------------
@@ -136,16 +120,16 @@ void BACKEND::set_player_names(QString name1, QString name2)
 // -----------------------------
 void BACKEND::start_game()
 {
-    qDebug() << "is_server:" << is_server();
-    qDebug() << "player1:" << player1.name;
-    qDebug() << "player2:" << player2.name;
+    qDebug() << "Bin ich der Server:" << m_is_server;   // Ausgabe wer der Server ist
+    qDebug() << "player1:" << player1.name;             // Ausgabe wie player1 heißt
+    qDebug() << "player2:" << player2.name;             // Ausgabe wie player2 heißt
 
-    if (!is_server()) {
+    if (!m_is_server) { // nur wenn man selbst Host ist kann Spiel starten
         qDebug() << "Nur Host darf das Spiel starten!";
         return;
     }
 
-    if (player1.name.isEmpty() || player2.name.isEmpty()) {
+    if (player1.name.isEmpty() || player2.name.isEmpty()) { // nur wenn von beiden Spielern der Name da ist
         qDebug() << "Noch nicht alle Namen da!";
         return;
     }
@@ -153,10 +137,5 @@ void BACKEND::start_game()
     qDebug() << "Spiel startet";
 }
 
-// -----------------------------
-// Bool ausgeben ob man HOST ist oder nicht
-// -----------------------------
-bool BACKEND::is_server() const {
-    return m_is_server;
-}
+
 

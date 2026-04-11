@@ -36,33 +36,33 @@ public:
     QString pending_name; // Name von Spieler 2 merken bis Verbingdung zum Server steht
     void set_pending_name(QString name); // setzt den zumerkenen Spieler 2 Namen
 
-    // -------------------------------
-    // Netzwerk-Funktionen
-    // -------------------------------
+// -------------------------------
+// Netzwerk-Funktionen
+// -------------------------------
 
     // Startet das Spiel als Host (Server)
     // → wartet darauf, dass sich ein Client verbindet
     void host_game();
 
+    // Setzt ob man HOST oder CLIENT ist
+    void set_server_mode(bool server);
+
     // Verbindet sich als Client zu einem Server
     // ip = IP-Adresse des Hosts (z.B. "127.0.0.1")
     void join_game(QString ip);
 
+// -------------------------------
+// Allgemeine-Funktionen
+// -------------------------------
     // Sendet eine Nachricht an den verbundenen Partner
     // (egal ob Server oder Client)
     void send_message(QString msg);
 
+// -------------------------------
+// Spiel-Funktionen
+// -------------------------------
     // Startet das Spiel: Namenswahl, Spielfeld, ...
     void start_game();
-
-    // Setzt ob man HOST oder CLIENT ist
-    void set_server_mode(bool server);
-
-    // gibt aus ob man HOST ist oder nicht
-    bool is_server() const;
-
-    // durch Slot Interaktion werden die Namen der Spieler durch eine eingabe gesetzt
-    void set_player_names(QString name1, QString name2);
 
 signals:
     // -------------------------------
@@ -80,10 +80,6 @@ signals:
     // Wird ausgelöst, wenn sich Status ob HOST oder Client gemacht wird
     //-> übergibt ob man HOST oder CLIENT ist
     void server_mode_changed(bool is_server);
-
-public slots:
-    // durch Slot Interaktion werden die Namen der Spieler durch eine eingabe gesetzt
-    //void set_player_names(QString name1, QString name2);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //                                                     Alles was Private ist
