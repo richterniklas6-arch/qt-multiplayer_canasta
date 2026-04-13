@@ -34,6 +34,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         game.cpp
         PRINT_ORDER.h
         PRINT_ORDER.cpp
+
+        player.cpp
+        widget.h widget.cpp
+        cards_picture.qrc
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Multiplayer_Canasta APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

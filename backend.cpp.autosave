@@ -134,8 +134,8 @@ void BACKEND::on_ready_read(){
         // -------------------------
         // NAME EMPFANGEN
         // -------------------------
-        else if (msg.startsWith("NAME|")) { // Infos über die Namen der Spieler (bräuchte ich wahrscheinlich gar nicht, ist im STATE mit drin
-            qDebug() << "Name wird noch komisch gesetzt kann raus";
+        else if (msg.startsWith("NAME|")) { // Infos über die Namen der Spieler, damit ist Spiel startbar
+            qDebug() << "Alle Namen sind da, das Spiel kann gestartet werden";
             QString name = msg.section('|', 1);
             player2.name = name;
             emit status_changed("Player2 gesetzt");
@@ -259,7 +259,7 @@ void BACKEND::set_pending_name(QString name_player2) // geschickter Name vom and
     pending_name = name_player2;    // setze Variable auf den Namen der geschickt wird
 }
 
-// Starte das Spiel
+// Bedingungnen an den Button Start Game
 void BACKEND::start_game(){
     //
     qDebug() << "Du bist der Server:" << m_is_server;   // Ausgabe wer der Server ist
@@ -283,6 +283,7 @@ void BACKEND::start_game(){
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
 //                                                             Spielseite einrichten
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
+// 
 void BACKEND::decide_who_begins() {
     int number_player = 2; // Anzahl der Spieler
     int random_beginner = rand() % number_player; // wähle zufällig 1 oder 2

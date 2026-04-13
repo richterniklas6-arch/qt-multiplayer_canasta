@@ -1,4 +1,4 @@
-/*#include "ROUND.h"
+#include "ROUND.h"
 #include "PRINT_ORDER.h"
 #include "CARDS.h"
 #include "BACKEND.h"
@@ -183,7 +183,7 @@ void ROUND::take_card_pile(PLAYER& player, CARDS& cards ) {
     spiel_fertig = true; //auslegen_definition(player, cards);
 }
 
-
+/*
 void ROUND::possible_lay_out_cards(PLAYER& player, CARDS& cards, Backend* backend) {
     // leeren der alten auslege Möglichkeiten
     player.possible_lay_out.possible_layout_cards.clear();

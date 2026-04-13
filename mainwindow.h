@@ -34,6 +34,8 @@ public:
     // Funktionen des MainWindows
     // um zwischen Chat und Game durch eine Button hinund her zuklicken
     void game_reiter(QVBoxLayout *main_layout);
+    // um das Spiel spielbar zu machen
+    void start_game_logic();
 
 private: // Die Members für diese Klasse
     // Pointer auf das Backend (Netzwerk-Logik)
@@ -45,6 +47,8 @@ private: // Die Members für diese Klasse
     QStackedWidget *stack; // Hauptfenster da drauf wird alles gestacked
     QWidget *start_page;     // Fenster für das Starten des Spiels (Host/Client, Namen,...)
     QWidget *game_page;      // Fenster für das Spiel (Karten der Spieler, Haufen,...)
+    QWidget *game_container;
+    QVBoxLayout *game_layout;
 
     // Timer für Übergang Start Page -> Game Page
     QTimer *timer;

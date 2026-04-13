@@ -1,4 +1,4 @@
-/*#ifndef ROUND_H
+#ifndef ROUND_H
 #define ROUND_H
 #include "PLAYER.h"
 #include "CARDS.h"
@@ -11,10 +11,12 @@ public:
     ROUND();
 
     bool round_finished = false; // Angabe ob Runde vorbei ist
-    void deal_out_cards(PLAYER& p1, PLAYER& p2, CARDS& cards);
-    void sortieren(PLAYER& player, CARDS& cards);
+    QString current_turn; // Name des Spielers, welcher in derzeitigen Runde dran ist
     QString player_turn;
 
+
+    void deal_out_cards(PLAYER& p1, PLAYER& p2, CARDS& cards);
+    void sortieren(PLAYER& player, CARDS& cards);
     bool auslegen_definition(PLAYER player, CARDS k);
     void take_card_pile(PLAYER& player, CARDS& cards);
     void possible_lay_out_cards(PLAYER& player, CARDS& cards, Backend* backend);
@@ -25,4 +27,4 @@ public:
 };
 
 #endif // ROUND_H
-*/
+

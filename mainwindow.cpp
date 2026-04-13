@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "backend.h"
+#include "widget.h"
 
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -171,7 +172,9 @@ void MAIN_WINDOW::set_up_start_page()
     connect(start_game_btn, &QPushButton::clicked, [=]() {
         backend->start_game();
         backend->send_message("START_GAME");
-        timer->start(1000);
+        timer->start(0);
+        start_game_logic();
+        stack->setCurrentWidget(game_page);
     });
 
     // -----------------------------
@@ -187,9 +190,11 @@ void MAIN_WINDOW::set_up_start_page()
     // BACKEND → UI
     // -----------------------------
     connect(backend, &BACKEND::message_received, [=](QString msg){//msg wird vom Host gesendet
-        // wenn das Spiel gestartet wird
+        // wenn das Spiel gestartet wird beim HOST, starte auch hier
         if (msg == "START_GAME") {
-            stack->setCurrentWidget(game_page);  // Client wechselt ins Spiel
+            stack->setCurrentWidget(game_page);  // erst Seite wechseln
+            start_game_logic();                  // dann UI bauen
+            return;
             return;
         }
 
@@ -212,33 +217,20 @@ void MAIN_WINDOW::set_up_start_page()
 
 void MAIN_WINDOW::set_up_game_page()
 {
+    // Hauptebene
     game_page = new QWidget;
     QVBoxLayout *main_layout = new QVBoxLayout(game_page);
-    // Menüband
-    game_reiter(main_layout); // fügt den "Reiter" zwischen Chat und Game hin und her zu wechseln
 
-    /*
-    // ---------------- Info Panel ----------------
-    widget_info_panel *info_panel = new widget_info_panel(backend);
+    // Menü + Stack
+    game_reiter(main_layout);
 
-    // Infopanel zum main_layout hinzufügen
-    main_layout->addWidget(info_panel);
-    //=> Infokasten darüber was auslegbar ist
+    // Leerer Game-Bereich erstmal
+    game_container = new QWidget;
+    game_layout = new QVBoxLayout(game_container);
 
-
-    // ---------------- Cards ----------------
-    WIDGET_PLAYER_CARDS *player2_widget = new WIDGET_PLAYER_CARDS(backend, 2);       // ausgelegte und Hand Karten Spieler 2
-    WIDGET_PILE_DRAW_PILE *pile_draw_pile_widget = new WIDGET_PILE_DRAW_PILE(backend);  // Draw Pile and Discard Pile
-    WIDGET_PLAYER_CARDS *player1_widget = new WIDGET_PLAYER_CARDS(backend, 1);       // ausgelegte und Hand Karten Spieler 1
-
-    // Karten hinzufügen zum main_layout (Hauptebene Anzeigen
-    main_layout -> addWidget(player2_widget);
-    main_layout->addWidget(pile_draw_pile_widget);
-    main_layout->addWidget(player1_widget);
-    //=> alle Karten die es gibt zum main_layout hinzugefügt
+    main_layout->addWidget(game_container);
 
     stack->addWidget(game_page);
-    */
 }
 
 void MAIN_WINDOW::game_reiter(QVBoxLayout *main_layout){
@@ -271,8 +263,6 @@ void MAIN_WINDOW::game_reiter(QVBoxLayout *main_layout){
 
     main_layout->addWidget(game_stack);
 
-    stack->addWidget(game_page);
-
     // -----------------------------
     // UI bauen
     // ... für Chat
@@ -298,12 +288,6 @@ void MAIN_WINDOW::game_reiter(QVBoxLayout *main_layout){
         chat_box->append("Andere: " + msg);
     });
 
-    // ... für Game
-    QVBoxLayout *gameLayout = new QVBoxLayout(game_view);
-
-    QLabel *placeholder = new QLabel("Game läuft hier (Karten kommen später)");
-    gameLayout->addWidget(placeholder);
-
     // -----------------------------
     // Umschalten zwischen Game und Chat und Start new Game
     // -----------------------------
@@ -320,3 +304,32 @@ void MAIN_WINDOW::game_reiter(QVBoxLayout *main_layout){
     });
 }
 
+void MAIN_WINDOW::start_game_logic()
+{
+    // ❗ Nur Server macht Spiellogik
+    if (backend->is_server()) {
+
+        backend->decide_who_begins();
+        backend->deal_out_cards();
+
+        QString text = "In dieser Runde beginnt " + backend->game.player_first_draw;
+        backend->setWho_turn_text(text);
+
+        backend->send_state();
+    }
+
+    // 👉 DAS HIER MUSS IMMER PASSIEREN (auch beim Client!)
+
+    // 🧹 UI leeren
+    QLayoutItem *child;
+    while ((child = game_layout->takeAt(0)) != nullptr) {
+        if (child->widget()) delete child->widget();
+        delete child;
+    }
+
+    // 🧱 UI bauen
+    WHO_TURN_WIDGET *whoTurnWidget = new WHO_TURN_WIDGET(backend);
+    game_layout->addWidget(whoTurnWidget);
+
+    qDebug() << "UI aufgebaut!";
+}
