@@ -52,6 +52,7 @@ public:
 
     WIDGET_PLAYER_CARDS(BACKEND* backend, int player_index, QWidget *parent = nullptr);
 
+    void update_cards();
     void raise_cards(CLICKABLE_LABEL* clickedLabel);
 
 private:
@@ -74,10 +75,11 @@ private:
 class CLICKABLE_LABEL : public QLabel {
     Q_OBJECT
 public:
-    explicit CLICKABLE_LABEL(const QString &cardName, QWidget *parent = nullptr)
-        : QLabel(parent), cardName(cardName) {}
+    explicit CLICKABLE_LABEL(const QString &card_name, QWidget *parent = nullptr)
+        : QLabel(parent), card_name(card_name) {}
+    int how_often = 0;
 
-    QString cardName;
+    QString card_name;
 
 signals:
     void clicked(CLICKABLE_LABEL* self);

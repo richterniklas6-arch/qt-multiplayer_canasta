@@ -3,6 +3,7 @@
 #include <QPixmap>
 #include <QDebug>
 #include <QHBoxLayout>
+#include <QPropertyAnimation>
 
 // -------------------------------------------------------------------------------------------------------------------------------
 // Definition für Klasse widget_info_panel
@@ -129,10 +130,10 @@ WIDGET_PILE_DRAW_PILE::WIDGET_PILE_DRAW_PILE(BACKEND* backend, QWidget *parent)
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
 
-    // Draw Pile
+    // Draw Pile Karte zum Layout hinzufügen (Stapel)
     drawPile = new QLabel;
 
-    QPixmap drawPixmap(":/cards_picture_back/kindpng_1537437.png");
+    QPixmap drawPixmap(":/cards_picture/cards_picture/kindpng_1537437.png"); // füge Bild hinzu
     if (drawPixmap.isNull()) {
         qDebug() << "Konnte Draw Pile Bild nicht laden";
         drawPixmap = QPixmap(80,120);
@@ -142,30 +143,28 @@ WIDGET_PILE_DRAW_PILE::WIDGET_PILE_DRAW_PILE(BACKEND* backend, QWidget *parent)
     drawPile->setPixmap(drawPixmap.scaled(80,120));
     layout->addWidget(drawPile);
 
-    // Discard Pile
+    // Discard Pile Karte zum Layout hinzufügen (Ablagestapel)
     discardPile = new QLabel;
     layout->addWidget(discardPile);
 
-    // Funktion zum Updaten
-    //auto updateDiscardPile = [=]() {
-    //    QString path = ":/cards_picture/cards_picture/" + backend->get_first_card_draw_pile() + ".png";
-    //    QPixmap pix(path);
-//
-    //    if (pix.isNull()) {
-    //        qDebug() << "Konnte Discard Pile Bild nicht laden:" << path;
-    //        pix = QPixmap(80,120);
-    //        pix.fill(Qt::red);
-    //    }
-//
-    //    discardPile->setPixmap(pix.scaled(80,120));
-    //};
-//
-    //updateDiscardPile();
-//
-    //connect(backend, &BACKEND::first_draw_pileChanged,
-    //        this, updateDiscardPile);
-}
+        // Funktion zum Updaten des Discard Pile
+    auto update_discard_pile = [=]() {
+        QString path = ":/cards_picture/cards_picture/" + backend->first_draw_pile() + ".png";
+        QPixmap pix(path);
+       if (pix.isNull()) {
+            qDebug() << "Konnte Discard Pile Bild nicht laden:" << path;
+            pix = QPixmap(80,120);
+            pix.fill(Qt::red);
+        }
+       discardPile->setPixmap(pix.scaled(80,120));
+    };
 
+    update_discard_pile();
+
+    // führe update_discard_pile aus wenn draw_pile geändert wird
+    connect(backend, &BACKEND::first_draw_pileChanged,
+            this, update_discard_pile);
+}
 
 // -------------------------------------------------------------------------------------------------------------------------------
 // Definition für Klasse WIDGET_PLAYER_CARDS
@@ -179,46 +178,17 @@ WIDGET_PLAYER_CARDS::WIDGET_PLAYER_CARDS(BACKEND* backend, int player_index, QWi
     cardsLayout = new QHBoxLayout;
     layOutLayout = new QHBoxLayout;
 
+
     mainLayout->addLayout(layOutLayout);
     mainLayout->addLayout(cardsLayout);
 
     // Karten in der Hand
-    connect(backend, &BACKEND::p1_cards_listChanged, this, [=]() {
-        QLayoutItem *item;
-        while ((item = cardsLayout->takeAt(0)) != nullptr) {
-            delete item->widget();
-            delete item;
-        }
+    connect(backend, &BACKEND::p1_cards_listChanged,
+            this, &WIDGET_PLAYER_CARDS::update_cards);
 
-        // lösche alle alten Stände
-        all_cards.clear();
-        raised_state.clear();
+    connect(backend, &BACKEND::p2_cards_listChanged,
+            this, &WIDGET_PLAYER_CARDS::update_cards);
 
-        const QStringList cards = (player_index == 1)
-                                      ? backend->p1_cards_list()
-                                      : backend->p2_cards_list();
-
-        for (const QString &card : cards) {
-            CLICKABLE_LABEL *card_clickable_label = new CLICKABLE_LABEL(card, this); // macht Karte anklickbar
-            all_cards.append(card_clickable_label);
-            raised_state[card_clickable_label] = false; // setzt Angehoben auf false für aktuelle Karte
-
-            // ausführen von raise_cards wenn Karte angeklickt wird
-            connect(card_clickable_label, &CLICKABLE_LABEL::clicked,
-                    this, &WIDGET_PLAYER_CARDS::raise_cards);
-
-            // laden des Bildes
-            QPixmap pix;
-            if (player_index == 1) {    // für player1 (dort Karten sichtbar)
-                pix.load(":/cards_picture/cards_picture/" + card + ".png");
-            } else {                    // für player2 (dort nur Rückseite der Karten)
-                pix.load(":/cards_picture_back/kindpng_1537437.png");
-            }
-
-            card_clickable_label->setPixmap(pix.scaled(80,120)); // Karten
-            cardsLayout->addWidget(card_clickable_label);
-        }
-    });
 
     // Ausgelegte Karten (nur für Spieler 1 aktuell)
     if (player_index == 1) {
@@ -242,53 +212,93 @@ WIDGET_PLAYER_CARDS::WIDGET_PLAYER_CARDS(BACKEND* backend, int player_index, QWi
             }
         });
     }
+}
 
+void WIDGET_PLAYER_CARDS::update_cards(){
+    // wird ausgeführt wenn die Karten des Spieler 1 geändert werden
+    // einmal alles löschen
+    QLayoutItem *item;
+    while ((item = cardsLayout->takeAt(0)) != nullptr) {
+        delete item->widget();
+        delete item;
+    }
 
+    // lösche alle alten Zustände
+    all_cards.clear();
+    raised_state.clear();
+
+    QStringList cards;          // eigene Karten setzen
+    QStringList cards_other_pc; // vom anderem Spieler Karten setzen
+
+    bool i_am_p1 = backend->is_server();
+
+    if (player_index == 1) {
+        // eigenes Feld
+        cards = i_am_p1 ? backend->p1_cards_list()
+                        : backend->p2_cards_list();
+    }
+    else {
+        // Gegner
+        int count = i_am_p1 ? backend->p2_cards_list().size()
+                            : backend->p1_cards_list().size();
+
+        for (int i = 0; i < count; i++) {
+            cards << "kindpng_1537437"; // Kartenrückseite
+        }
+    }
+
+    for (const QString &card : cards) {//gehe alle Elemente von cards durch
+        CLICKABLE_LABEL *card_clickable_label = new CLICKABLE_LABEL(card, this); // macht Karte anklickbar
+
+        all_cards.append(card_clickable_label);     //// schauen was das ist
+        raised_state[card_clickable_label] = false; // setzt Angehoben auf false für aktuelle Karte
+
+        // ausführen von raise_cards wenn Karte angeklickt wird
+        connect(card_clickable_label, &CLICKABLE_LABEL::clicked,
+                this, &WIDGET_PLAYER_CARDS::raise_cards);
+
+        // laden des Bildes
+        QPixmap pix;
+        pix.load(":/cards_picture/cards_picture/" + card + ".png");
+
+        card_clickable_label->setPixmap(pix.scaled(80,120));    // Karten anzeigen
+        cardsLayout->addWidget(card_clickable_label);           // Karten zum Layout hinzufügne
+    }
 }
 
 
-void WIDGET_PLAYER_CARDS::raise_cards(CLICKABLE_LABEL* clickedLabel)
+void WIDGET_PLAYER_CARDS::raise_cards(CLICKABLE_LABEL* clicked_label)
 {
-    if (player_index != 1) return; // nur die Karten von Spieler 1 anheben
-
-    // alle Karten wieder zurück setzen
+    if (player_index != 1) return; // nur eigene Karten
+    qDebug() << raised_state[clicked_label];
+    if(raised_state[clicked_label]==true && clicked_label->how_often == 1){
+        qDebug() << "Du willst diese Karte auslegen";
+        return;
+    }
+    qDebug()<< clicked_label->card_name;
+    qDebug()<< clicked_label->how_often;
+    // alle Karten zurücksetzen
     for (CLICKABLE_LABEL* l : all_cards) {
         if (raised_state[l]) {
-            //QPropertyAnimation *anim = new QPropertyAnimation(l, "geometry", this);
-//
-            //QRect start = l->geometry();
-            //QRect end = start;
-            //end.translate(0, 30);   // runter
-//
-            //anim->setDuration(150);
-            //anim->setStartValue(start);
-            //anim->setEndValue(end);
-            //anim->start(QAbstractAnimation::DeleteWhenStopped);
-
+            l->setContentsMargins(0, 0, 0, 0); // zurücksetzen
             raised_state[l] = false;
         }
     }
 
-    // angeklickte Karte anheben
-    // nur angeklickte Karte triggern
-    bool raised = raised_state[clickedLabel];
-    qDebug() << clickedLabel;
+    // geklickte Karte
+    bool raised = raised_state[clicked_label]; // nehme den derzeitigen Status ob oben oder unten ist
+    qDebug() << clicked_label;
 
-    //QPropertyAnimation *anim = new QPropertyAnimation(clickedLabel, "geometry", this);
 
-    QRect start = clickedLabel->geometry();
-    QRect end = start;
-
-    if (raised)
-        end.translate(0, 30);
-    else
-        end.translate(0, -30);
-
-    //anim->setDuration(200);
-    //anim->setStartValue(start);
-    //anim->setEndValue(end);
-//
-    //raised_state[clickedLabel] = !raised;
-//
-    //anim->start(QAbstractAnimation::DeleteWhenStopped);
+    if (raised) {
+        // runter
+        clicked_label->setContentsMargins(0, 0, 0, 0);
+        raised_state[clicked_label] = false;
+        clicked_label->how_often = 0;
+    } else {
+        // hoch
+        clicked_label->setContentsMargins(0, -30, 0, 0);
+        raised_state[clicked_label] = true;
+        clicked_label->how_often = 1;
+    }
 }

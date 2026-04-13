@@ -306,7 +306,7 @@ void MAIN_WINDOW::game_reiter(QVBoxLayout *main_layout){
 
 void MAIN_WINDOW::start_game_logic()
 {
-    // ❗ Nur Server macht Spiellogik
+    // Nur Server macht Spiellogik
     if (backend->is_server()) {
 
         backend->decide_who_begins();
@@ -318,18 +318,45 @@ void MAIN_WINDOW::start_game_logic()
         backend->send_state();
     }
 
-    // 👉 DAS HIER MUSS IMMER PASSIEREN (auch beim Client!)
+// DAS HIER MUSS IMMER PASSIEREN (auch beim Client!)
 
-    // 🧹 UI leeren
+// UI leeren
     QLayoutItem *child;
     while ((child = game_layout->takeAt(0)) != nullptr) {
         if (child->widget()) delete child->widget();
         delete child;
     }
 
-    // 🧱 UI bauen
+// UI bauen
+    // Info wer derzeit dran ist
+    QString who_am_i;
+    if(backend->is_server()){
+        who_am_i = "Ich bin der Server und damit der Host und mein Name ist" + backend->player1.name;
+    }
+    else{
+        who_am_i = "Ich bin ein Client und mein Name ist" + backend->player2.name;
+    }
+    QLabel *who_label = new QLabel(who_am_i);
+    game_layout->addWidget(who_label);
+
+
     WHO_TURN_WIDGET *whoTurnWidget = new WHO_TURN_WIDGET(backend);
     game_layout->addWidget(whoTurnWidget);
+
+    // Spielkarten des anderen Spielers
+    WIDGET_PLAYER_CARDS *other_player_cards_widget = new WIDGET_PLAYER_CARDS(backend, 2);
+    game_layout->addWidget(other_player_cards_widget);
+    other_player_cards_widget->update_cards();  // aktuellisiere die Karten des Gegenspielers
+
+    // Pile Draw Karte
+    WIDGET_PILE_DRAW_PILE *pile_widget = new WIDGET_PILE_DRAW_PILE(backend);
+    game_layout->addWidget(pile_widget);
+
+    // Spielkarten des anderen Spielers
+    WIDGET_PLAYER_CARDS *player_cards_widget = new WIDGET_PLAYER_CARDS(backend, 1);
+    game_layout->addWidget(player_cards_widget);
+    player_cards_widget->update_cards();        // aktuellisiere die eigenen Karten
+
 
     qDebug() << "UI aufgebaut!";
 }

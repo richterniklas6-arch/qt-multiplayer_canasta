@@ -1,1 +1,61 @@
-<RCC/>
+<RCC>
+    <qresource prefix="/cards_picture">
+        <file>cards_picture/2_of_clubs.png</file>
+        <file>cards_picture/2_of_diamonds.png</file>
+        <file>cards_picture/2_of_hearts.png</file>
+        <file>cards_picture/2_of_spades.png</file>
+        <file>cards_picture/3_of_clubs.png</file>
+        <file>cards_picture/3_of_diamonds.png</file>
+        <file>cards_picture/3_of_hearts.png</file>
+        <file>cards_picture/3_of_spades.png</file>
+        <file>cards_picture/4_of_clubs.png</file>
+        <file>cards_picture/4_of_diamonds.png</file>
+        <file>cards_picture/4_of_hearts.png</file>
+        <file>cards_picture/4_of_spades.png</file>
+        <file>cards_picture/5_of_clubs.png</file>
+        <file>cards_picture/5_of_diamonds.png</file>
+        <file>cards_picture/5_of_hearts.png</file>
+        <file>cards_picture/5_of_spades.png</file>
+        <file>cards_picture/6_of_clubs.png</file>
+        <file>cards_picture/6_of_diamonds.png</file>
+        <file>cards_picture/6_of_hearts.png</file>
+        <file>cards_picture/6_of_spades.png</file>
+        <file>cards_picture/7_of_clubs.png</file>
+        <file>cards_picture/7_of_diamonds.png</file>
+        <file>cards_picture/7_of_hearts.png</file>
+        <file>cards_picture/7_of_spades.png</file>
+        <file>cards_picture/8_of_clubs.png</file>
+        <file>cards_picture/8_of_diamonds.png</file>
+        <file>cards_picture/8_of_hearts.png</file>
+        <file>cards_picture/8_of_spades.png</file>
+        <file>cards_picture/9_of_clubs.png</file>
+        <file>cards_picture/9_of_diamonds.png</file>
+        <file>cards_picture/9_of_hearts.png</file>
+        <file>cards_picture/9_of_spades.png</file>
+        <file>cards_picture/10_of_clubs.png</file>
+        <file>cards_picture/10_of_diamonds.png</file>
+        <file>cards_picture/10_of_hearts.png</file>
+        <file>cards_picture/10_of_spades.png</file>
+        <file>cards_picture/ace_of_clubs.png</file>
+        <file>cards_picture/ace_of_diamonds.png</file>
+        <file>cards_picture/ace_of_hearts.png</file>
+        <file>cards_picture/ace_of_spades.png</file>
+        <file>cards_picture/jack_of_clubs.png</file>
+        <file>cards_picture/jack_of_diamonds.png</file>
+        <file>cards_picture/jack_of_hearts.png</file>
+        <file>cards_picture/jack_of_spades.png</file>
+        <file>cards_picture/joker.png</file>
+        <file>cards_picture/king_of_clubs.png</file>
+        <file>cards_picture/king_of_diamonds.png</file>
+        <file>cards_picture/king_of_hearts.png</file>
+        <file>cards_picture/king_of_spades.png</file>
+        <file>cards_picture/queen_of_clubs.png</file>
+        <file>cards_picture/queen_of_diamonds.png</file>
+        <file>cards_picture/queen_of_hearts.png</file>
+        <file>cards_picture/queen_of_spades.png</file>
+        <file>cards_picture/kindpng_1537437.png</file>
+    </qresource>
+    <qresource prefix="/cards_picture_back">
+        <file>cards_picture/kindpng_1537437.png</file>
+    </qresource>
+</RCC>

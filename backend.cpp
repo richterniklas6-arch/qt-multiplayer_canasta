@@ -134,8 +134,8 @@ void BACKEND::on_ready_read(){
         // -------------------------
         // NAME EMPFANGEN
         // -------------------------
-        else if (msg.startsWith("NAME|")) { // Infos über die Namen der Spieler (bräuchte ich wahrscheinlich gar nicht, ist im STATE mit drin
-            qDebug() << "Name wird noch komisch gesetzt kann raus";
+        else if (msg.startsWith("NAME|")) { // Infos über die Namen der Spieler, damit ist Spiel startbar
+            qDebug() << "Alle Namen sind da, das Spiel kann gestartet werden";
             QString name = msg.section('|', 1);
             player2.name = name;
             emit status_changed("Player2 gesetzt");
@@ -259,7 +259,7 @@ void BACKEND::set_pending_name(QString name_player2) // geschickter Name vom and
     pending_name = name_player2;    // setze Variable auf den Namen der geschickt wird
 }
 
-// Starte das Spiel
+// Bedingungnen an den Button Start Game
 void BACKEND::start_game(){
     //
     qDebug() << "Du bist der Server:" << m_is_server;   // Ausgabe wer der Server ist
@@ -283,13 +283,10 @@ void BACKEND::start_game(){
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
 //                                                             Spielseite einrichten
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
+// Setzt wer Spiel beginnt
 void BACKEND::decide_who_begins() {
     int number_player = 2; // Anzahl der Spieler
     int random_beginner = rand() % number_player; // wähle zufällig 1 oder 2
-
-    // Könnte vielleicht raus
-    if (player1.name==""){player1.name="Knöddel Karl";}
-    if (player2.name==""){player2.name="Brezel Bernd";}
 
     if (random_beginner == 0) { // wenn Spieler 1 beginnt
         game.player_first_draw = player1.name;  // setze den Spieler der begonnen hat
@@ -300,32 +297,36 @@ void BACKEND::decide_who_begins() {
         round.current_turn = player2.name;      // setze den Spieler der die Runde beginnt
     }
 
-    if (m_is_server){send_state();} //
+    if (m_is_server){send_state();} // sendet den aktuellen Status des Spiels an beide PC vom HOST aus
 }
 
+// teilt die Karten an beide Spieler aus
 void BACKEND::deal_out_cards(){
-    round.deal_out_cards(player1, player2, cards);
+    round.deal_out_cards(player1, player2, cards); // teilt Karten aus
 
+    // setze die Q_PROPERTY auf den derzeitigen Stand
     // tut die letzte (oberste) Karte vom Ablagestapel übergeben (für anzeige der Karten)
     if (!cards.draw_pile.empty()) { // der Stapel darf nicht leer sein
         setFirst_draw_pile(cards.draw_pile.back());
     }
-
     // Liste erstellen mit den Namen der Karten (für anzeigen der Karten)
     QStringList list_player1;
     for (const QString &card : player1.cards) {
         list_player1 << card;
     }
     setP1_cards_list(list_player1); // setzt die Liste von player1 auf die ausgelegte Karten
-
     QStringList list_player2;
     for (const QString &card : player2.cards) {
         list_player2 << card;
     }
     setP2_cards_list(list_player2); // setzt die Liste von player2 auf die ausgelegte Karten
-    if (m_is_server){send_state();} //
+
+    if (m_is_server){send_state();} // sendet den aktuellen Status des Spiels an alle PC vom HOST aus
+    emit p1_cards_listChanged();    // sage das Player 1 Karten geändert wurden
+    emit p2_cards_listChanged();    // sage das Player 2 karten geändert wurden
 }
 
+//
 bool BACKEND::round_procedure(){
     bool round_finished = false;
     //std::vector<PLAYER*> whole_player;
