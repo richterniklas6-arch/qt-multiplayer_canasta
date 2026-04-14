@@ -67,19 +67,17 @@ private:
     QList<CLICKABLE_LABEL*> all_cards; // für jede Karte wird Anzahl und Liste der Label gespeichert
     QMap<QLabel*, bool> raised_state; // für jede Karte wird Label und true/false (angehoben?) gespeichert
 
-    BACKEND* backend;
-};
-
-
+    BACKEND* backend;};
 // Unterklasse um die Karten klickbar zu machen
 class CLICKABLE_LABEL : public QLabel {
     Q_OBJECT
 public:
-    explicit CLICKABLE_LABEL(const QString &card_name, QWidget *parent = nullptr)
-        : QLabel(parent), card_name(card_name) {}
-    int how_often = 0;
+    explicit CLICKABLE_LABEL(const QString &card_name_clicked, QWidget *parent = nullptr)
+        : QLabel(parent), card_name(card_name_clicked) {}
+    //=> Konstruktor setzt card_name auf angeklickte card_name_clicked
 
-    QString card_name;
+    int how_often = 0;  // wie oft schon angeklickt
+    QString card_name;  // Name der Karte die angeklickt wurde
 
 signals:
     void clicked(CLICKABLE_LABEL* self);
@@ -89,5 +87,18 @@ protected:
         emit clicked(this);
     }
 };
+
+class WIDGET_TAKE_CARD_PILE : public QWidget
+{
+    Q_OBJECT
+
+public:
+
+    explicit WIDGET_TAKE_CARD_PILE(BACKEND* backend, QWidget *parent = nullptr);
+
+private:
+    BACKEND* backend;
+};
+
 
 #endif // WIDGET_H

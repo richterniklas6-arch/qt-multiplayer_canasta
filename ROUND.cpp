@@ -1,7 +1,7 @@
 #include "ROUND.h"
 #include "PRINT_ORDER.h"
 #include "CARDS.h"
-#include "BACKEND.h"
+#include "backend.h"
 
 #include <QDebug>
 # include <vector>
@@ -98,9 +98,9 @@ void ROUND::sortieren(PLAYER& player, CARDS& k) {
 
 
 // Spieler führt seinen Zug aus
-void ROUND::take_card_pile(PLAYER& player, CARDS& cards ) {
+bool ROUND::take_card_pile(PLAYER& player, CARDS& cards ) {
     // Karte nehmen oder Haufen nehmen
-    bool draw_pile_take_able = 0;   // zeigt an ob Haufen nehmbar ist
+    bool draw_pile_take_able = false;   // zeigt an ob Haufen nehmbar ist
     int position_first_cdp;         // Position der Zahl der obersten Karte vom Ablagestapel vom Vektor "number"
     QString number_first_cdp = cards.draw_pile[0].section('_', 0, 0); // Zahl_ der oberste Karte des Nachziehstapels
 
@@ -137,34 +137,30 @@ void ROUND::take_card_pile(PLAYER& player, CARDS& cards ) {
             }
         }
     }
+    return draw_pile_take_able;
     //=> entschieden ob der Spieler den Haufen nehmen kann (Ja oder Nein)
 
     // Frage ob der Spieler den Haufen nehmen will
     if (player.be_outside && draw_pile_take_able) { // Spieler muss draußen und Stapel nehmbar sein
         // das muss ins infopanel rein
-
-
-
-        std::cout << "Willst du den Haufen nehmen? (Ja/Nein)" << std::endl;
-        std::string antwort;
-        std::cin >> antwort; // Antwort vom Spieler
+        qDebug() << "Willst du den Haufen nehmen? (Ja/Nein)";
 
         // Der Spieler nimmt den Karten Haufen
-        if (antwort == "Ja") {
-            std::vector<QString> neue_karten; // temporärer Vektor
-            for (auto it = cards.draw_pile.begin(); it != cards.draw_pile.end(); ++it) {// Pointer der immer auf ein Element vom Ablagestapel zeigt
-                if (*it == "3 Eiche" || *it == "3 Blatt") {
-                    qDebug() << "Eine schwarze drei blockt die restlichen Karten";
-                    break; // Schleife stoppen, schwarze drei gefunden
-                }
-                neue_karten.push_back(*it); // Karte aufnehmen
-            }
-
-            for (auto& karte : neue_karten) {
-                player.cards.push_back(karte);                  // Aufnehmen der Karten in die Hand
-                cards.draw_pile.erase(cards.draw_pile.begin()); // Gleichzeitig aus Ablagestapel löschen
-            }
-        }
+        //if (antwort == "Ja") {
+        //    std::vector<QString> neue_karten; // temporärer Vektor
+        //    for (auto it = cards.draw_pile.begin(); it != cards.draw_pile.end(); ++it) {// Pointer der immer auf ein Element vom Ablagestapel zeigt
+        //        if (*it == "3 Eiche" || *it == "3 Blatt") {
+        //            qDebug() << "Eine schwarze drei blockt die restlichen Karten";
+        //            break; // Schleife stoppen, schwarze drei gefunden
+        //        }
+        //        neue_karten.push_back(*it); // Karte aufnehmen
+        //    }
+//
+        //    for (auto& karte : neue_karten) {
+        //        player.cards.push_back(karte);                  // Aufnehmen der Karten in die Hand
+        //        cards.draw_pile.erase(cards.draw_pile.begin()); // Gleichzeitig aus Ablagestapel löschen
+        //    }
+        //}
     }
     // => der Spieler nimmt den Haufen genommen
 
@@ -183,16 +179,16 @@ void ROUND::take_card_pile(PLAYER& player, CARDS& cards ) {
     spiel_fertig = true; //auslegen_definition(player, cards);
 }
 
-/*
-void ROUND::possible_lay_out_cards(PLAYER& player, CARDS& cards, Backend* backend) {
+
+void ROUND::possible_lay_out_cards(PLAYER& player, CARDS& cards, BACKEND* backend) {
     // leeren der alten auslege Möglichkeiten
     player.possible_lay_out.possible_layout_cards.clear();
     player.possible_lay_out.sum_cardsblocks.clear();
     player.possible_lay_out.amount_lay_out.clear();
 
     std::vector<QString> possible_layout_cards; // Vektor mit den Karte die Spieler auslegen kann
-    std::vector<int> sum_cardsblocks;        // Vektor mit den Summen der Zahlenblöcke
-    std::vector<int> amount_lay_out;         // Vektor mit der Anzahl von Karten in einem Zahlenblock
+    std::vector<int> sum_cardsblocks;           // Vektor mit den Summen der Zahlenblöcke
+    std::vector<int> amount_lay_out;            // Vektor mit der Anzahl von Karten in einem Zahlenblock
 
     int min_value;                  // wieviele Punkte muss man zum auslegen haben
 
@@ -211,7 +207,7 @@ void ROUND::possible_lay_out_cards(PLAYER& player, CARDS& cards, Backend* backen
 //welche Karten kann der Spieler auslegen
     for (int i = 0; i < player.amount.size(); i++) {
 
-        bool need_small_joker = true; // Aussage ob man sie Schleife mit den kleinen Joker durchgehen muss
+        bool need_small_joker = true; // Aussage ob man die Schleife mit den kleinen Joker durchgehen muss
         // wenn Joker auslegen kann
         if (    (i == 12 || i == 13) &&                                          // nur Joker dieser Block
                  player.amount[12] + player.amount[13] >= 3 &&                    // + nur wenn mehr als 3 Joker
@@ -258,7 +254,7 @@ void ROUND::possible_lay_out_cards(PLAYER& player, CARDS& cards, Backend* backen
     if (player.possible_lay_out.possible_layout_cards.size()!=0) { // wenn man was auslegen kann
         // Aussage was auslegbar ist
         QString lay_out_print;
-        backend -> setInfoText("\nWillst du was auslegen? Du kannst diese Karten auslegen:\n"); // Allgemeine Aussage zum auslegen
+        lay_out_print += "\nWillst du was auslegen? Du kannst diese Karten auslegen:\n"; // Allgemeine Aussage zum auslegen
         for (int i = 0; i < player.possible_lay_out.possible_layout_cards.size(); i++) {
             lay_out_print += "Kartenblock "
                              + QString::number(i + 1) + ": "
@@ -267,16 +263,16 @@ void ROUND::possible_lay_out_cards(PLAYER& player, CARDS& cards, Backend* backen
                              + " und amount: " + QString::number(player.possible_lay_out.amount_lay_out[i])
                              + " \n ";
         }
-        backend -> setinfopanelText(lay_out_print); // alles was der Spieler auslegen kann
+        backend->setLay_out_text(lay_out_print); // alles was der Spieler auslegen kann
     }
     else {
-        backend->setinfopanelText("Keine Karten zum Auslegen!"); // wenn nichts auslegbar ist
+        backend->setLay_out_text("Keine Karten zum Auslegen!"); // wenn nichts auslegbar ist
     }
     //=> setzte infopanelText auf den gerade erstellten Text
 }
 
 
-bool ROUND::execute_lay_out_cards(PLAYER& player, CARDS& cards, Backend* backend, int index, int amount_small_joker, int amount_big_joker){
+bool ROUND::execute_lay_out_cards(PLAYER& player, CARDS& cards, BACKEND* backend, int index, int amount_small_joker, int amount_big_joker){
 // Erstellen Dictionary über alle Infos über den Kartenblock der ausgelegt wird
     lay_out_colour lay_out_results;
     lay_out_results.number = player.possible_lay_out.possible_layout_cards[index]; // Zahl vom Kartenblock der ausgelegt wird
@@ -335,7 +331,7 @@ bool ROUND::execute_lay_out_cards(PLAYER& player, CARDS& cards, Backend* backend
     // Will man mehr Kartenblöcke auslegen?
     return false;
 }
-
+/*
 bool ROUND::ende_spielzug(PLAYER& player, CARDS& cards, bool spiel_fertig) {
     std::cout << "Welche Karte willst du ablegen?" << std::endl;
     std::string karte_ablegen;

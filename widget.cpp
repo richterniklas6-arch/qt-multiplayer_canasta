@@ -269,14 +269,13 @@ void WIDGET_PLAYER_CARDS::update_cards(){
 
 void WIDGET_PLAYER_CARDS::raise_cards(CLICKABLE_LABEL* clicked_label)
 {
+    qDebug()<< "ich komme";
     if (player_index != 1) return; // nur eigene Karten
     qDebug() << raised_state[clicked_label];
     if(raised_state[clicked_label]==true && clicked_label->how_often == 1){
-        qDebug() << "Du willst diese Karte auslegen";
+        qDebug() << "Du willst diese Karte auslegen, das ist super aber es fehlt noch die Funktion dafür. Dafür muss aber überprüft werden ob die Karten anlegbar ist";
         return;
     }
-    qDebug()<< clicked_label->card_name;
-    qDebug()<< clicked_label->how_often;
     // alle Karten zurücksetzen
     for (CLICKABLE_LABEL* l : all_cards) {
         if (raised_state[l]) {
@@ -284,6 +283,8 @@ void WIDGET_PLAYER_CARDS::raise_cards(CLICKABLE_LABEL* clicked_label)
             raised_state[l] = false;
         }
     }
+    qDebug() << clicked_label->how_often;
+    qDebug() << clicked_label->card_name;
 
     // geklickte Karte
     bool raised = raised_state[clicked_label]; // nehme den derzeitigen Status ob oben oder unten ist
@@ -301,4 +302,32 @@ void WIDGET_PLAYER_CARDS::raise_cards(CLICKABLE_LABEL* clicked_label)
         raised_state[clicked_label] = true;
         clicked_label->how_often = 1;
     }
+}
+
+WIDGET_TAKE_CARD_PILE::WIDGET_TAKE_CARD_PILE(BACKEND* backend, QWidget *parent)
+    : QWidget(parent), backend(backend)
+{
+    QHBoxLayout *layout = new QHBoxLayout(this);
+
+    // Button ob Karte nehmen oder Haufen nehmen hinzufügen
+    QPushButton *take_card_btn = new QPushButton("Take Card");
+    QPushButton *take_pile_btn = new QPushButton("Take Pile");
+
+    take_card_btn->setVisible(true);
+    take_pile_btn->setVisible(false);
+
+
+    connect(backend, &BACKEND::take_card_pileChanged,
+            this, [=]() {
+                take_card_btn->show();
+                take_pile_btn->show();
+                take_pile_btn->setEnabled(backend->can_take_pile);
+    });
+    connect(take_card_btn, &QPushButton::clicked,
+            [=](){
+                qDebug()<< "Du willst eine Karte nehmen";
+    });
+
+    layout->addWidget(take_card_btn);
+    layout->addWidget(take_pile_btn);
 }

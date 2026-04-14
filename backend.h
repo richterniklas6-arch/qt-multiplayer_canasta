@@ -44,6 +44,9 @@ class BACKEND : public QObject
     // ausgelegte Karten des Spielers 2
     Q_PROPERTY(QStringList p2_layout_list READ p2_layout_list WRITE setP2_layout_list   NOTIFY p2_layout_listChanged FINAL)
 
+    // Bools die Entscheidungen übergeben müssen/aktuellisieren
+    // Aussage ob der Spieler die Karten nehmen möchte
+    Q_PROPERTY(bool take_card_pile READ take_card_pile WRITE setTake_card_pile NOTIFY take_card_pileChanged FINAL)
 //----------------------------------------------------------------------------------------------------------------------------------
 //                                                     Alles was Public ist
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -62,6 +65,7 @@ public:
     QStringList p1_layout_list() const{return m_player1_lay_out_list;}
     QStringList p2_cards_list() const {return m_player2_cards_list;}
     QStringList p2_layout_list() const{return m_player2_lay_out_list;}
+    bool take_card_pile() const{return m_take_card_pile_bool;}
 
 // Definition der WRITE für die Q_PROPERTY
     // setzt eine Member_String auf text den man haben will, auf diesen Text kann main.qml zugreifen und drucken
@@ -73,6 +77,8 @@ public:
     void setP1_layout_list(const QStringList& cards);
     void setP2_cards_list(const QStringList& cards);
     void setP2_layout_list(const QStringList& cards);
+    // setzt Member_bool auf bool den man haben will, auf diesen Bool kann main.qml zugreifen und drucken
+    void setTake_card_pile(const bool& aussage);
 
 
 // -------------------------------
@@ -132,7 +138,8 @@ public:
     void deal_out_cards();
 
     // tut eine Runde durchführen (1.Teil)
-    bool round_procedure();
+    bool can_take_pile=false;
+    bool take_card_pile(PLAYER& player);
 
 
 signals:
@@ -146,6 +153,7 @@ signals:
     void p1_layout_listChanged();
     void p2_cards_listChanged();
     void p2_layout_listChanged();
+    void take_card_pileChanged();
 
     // -------------------------------
     // Kommunikation Richtung UI
@@ -200,6 +208,7 @@ private:
     QStringList m_player1_lay_out_list;
     QStringList m_player2_cards_list;
     QStringList m_player2_lay_out_list;
+    bool m_take_card_pile_bool;
 
 };
 

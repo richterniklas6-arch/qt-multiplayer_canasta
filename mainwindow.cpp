@@ -306,17 +306,7 @@ void MAIN_WINDOW::game_reiter(QVBoxLayout *main_layout){
 
 void MAIN_WINDOW::start_game_logic()
 {
-    // Nur Server macht Spiellogik
-    if (backend->is_server()) {
 
-        backend->decide_who_begins();
-        backend->deal_out_cards();
-
-        QString text = "In dieser Runde beginnt " + backend->game.player_first_draw;
-        backend->setWho_turn_text(text);
-
-        backend->send_state();
-    }
 
 // DAS HIER MUSS IMMER PASSIEREN (auch beim Client!)
 
@@ -328,7 +318,7 @@ void MAIN_WINDOW::start_game_logic()
     }
 
 // UI bauen
-    // Info wer derzeit dran ist
+    // Info welchen Namen ich habe und ob ich der Host bin
     QString who_am_i;
     if(backend->is_server()){
         who_am_i = "Ich bin der Server und damit der Host und mein Name ist" + backend->player1.name;
@@ -339,7 +329,7 @@ void MAIN_WINDOW::start_game_logic()
     QLabel *who_label = new QLabel(who_am_i);
     game_layout->addWidget(who_label);
 
-
+    // Info wer derzeit dran ist
     WHO_TURN_WIDGET *whoTurnWidget = new WHO_TURN_WIDGET(backend);
     game_layout->addWidget(whoTurnWidget);
 
@@ -357,6 +347,30 @@ void MAIN_WINDOW::start_game_logic()
     game_layout->addWidget(player_cards_widget);
     player_cards_widget->update_cards();        // aktuellisiere die eigenen Karten
 
+    // Abfrage ob man eine Karte nehmen will oder den Ablegestapel
+    WIDGET_TAKE_CARD_PILE *take_widget = new WIDGET_TAKE_CARD_PILE(backend);
+    game_layout->addWidget(take_widget);
+
 
     qDebug() << "UI aufgebaut!";
+
+// DAS WIRD NUR VOM SERVER GEMACHT
+    // Nur Server macht Spiellogik
+    if (backend->is_server()) {
+
+        backend->decide_who_begins();
+        QString text = "In dieser Runde beginnt " + backend->game.player_first_draw;
+        backend->setWho_turn_text(text);
+
+        backend->deal_out_cards();
+
+        bool round_finished = false;
+        // Vektor aus allen Spieler erstellen
+        std::vector<PLAYER*> whole_player;
+        whole_player.push_back(&backend->player1);
+        whole_player.push_back(&backend->player2);
+        backend->take_card_pile(backend->player1);
+
+        backend->send_state();
+    }
 }

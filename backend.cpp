@@ -249,7 +249,17 @@ void BACKEND::setFirst_draw_pile(const QString& cards){
     m_first_card_draw_pile = cards;
     emit first_draw_pileChanged();
 }
+void BACKEND::setTake_card_pile(const bool& aussage){
+    qDebug() << "bin schon mal hier";
+    //if (m_take_card_pile_bool == aussage){
+    //    qDebug() << " Leider hier da m_take_card..:" << m_take_card_pile_bool << "und aussage: " << aussage;
+    //    return;
+    //}
 
+    qDebug() << "und hier";
+    m_take_card_pile_bool = true;//aussage;
+    emit take_card_pileChanged();
+}
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
 //                                                             Startseite einrichten
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -327,35 +337,24 @@ void BACKEND::deal_out_cards(){
 }
 
 //
-bool BACKEND::round_procedure(){
-    bool round_finished = false;
-    //std::vector<PLAYER*> whole_player;
-//
-    //// könnte hier mit for schleife mehrere spieler hinzufügen
-    //whole_player.push_back(&player1);
-    //whole_player.push_back(&player2);
-//
-    //// sagen, wer dran ist
-    //setInfoText("Es beginnt: " + game.player_first_draw);
-//
-    //// Schleife über die Spiele
-    //for(PLAYER* player: whole_player){
-    //    round.player_turn = player -> name; // setzen welcher Spieler dran ist
-    //    print_order(); // drucken aller Karten und Werte von ihnen
-//
-    //    // Haufen oder Karte nehmen
-    //    round.take_card_pile(*player, cards);
-//
-    //    //aktuellisiere die Karten des Spielers
-    //    QStringList list_player;
-    //    for (const QString &card : player->cards) {
-    //        list_player << card;
-    //    }
-//
-    //    // aktuellisiere für den Bildschirm die Karten der beiden Spieler
-    //    if(player->name==player1.name)setcardsplayer1(list_player);
-    //    if(player->name==player2.name)setcardsplayer2(list_player);
-    //    round.possible_lay_out_cards(*player, cards, this);
-    //    //round_procedure1(player, cards);
-    //    break;
+bool BACKEND::take_card_pile(PLAYER& player){
+    //if(round.player_turn==player.name){
+        qDebug()<< "Du bist dran und du hast die Wahl ob du eine Karte oder den Haufen nimmst";
+
+        // Haufen oder Karte nehmen
+        can_take_pile = round.take_card_pile(player, cards);
+        setTake_card_pile(can_take_pile);
+        //aktuellisiere die Karten des Spielers
+        ////QStringList list_player;
+        //for (const QString &card : player.cards) {
+        //    list_player << card;
+        //}
+        //
+        //// aktuellisiere für den Bildschirm die Karten der beiden Spieler
+        //if(player.name==player1.name)setP1_cards_list(list_player);
+        //if(player.name==player2.name)setP2_cards_list(list_player);
+        //round.possible_lay_out_cards(player, cards, this);
+    //}
+    //else{qDebug()<< "Du bist nicht dran";}
+    return true;
 }
